@@ -13,7 +13,7 @@ import Brick.Widgets.Center
 import Control.Exception (displayException, try)
 import Control.Monad (filterM)
 import Control.Monad.IO.Class
-import Data.Functor (void)
+import Data.Functor (void, ($>))
 import Data.List (sort)
 import Data.Random
 import Lens.Micro.Platform
@@ -128,6 +128,8 @@ handleEvent s@State{_list=l} (VtyEvent e) =
                   case e of
                     V.EvKey (V.KChar 's') []  -> 
                       continue (s & gs.doShuffle %~ not)
+                    V.EvKey (V.KChar 'a') []  -> 
+                      suspendAndResume $ amountSelector s
                     V.EvKey V.KEnter [] ->
                       case L.listSelectedElement l' of
                         Nothing -> continue s'
@@ -155,6 +157,17 @@ runCardSelectorUI gs = do
   let initialState = State (L.list () options 1) Nothing rs gs
   _ <- defaultMain app initialState
   return () 
+
+amountSelectorUI :: GlobalState -> IO ()
+amountSelectorUI gs = do
+  let options = Vec.fromList [ "5"
+                             , "10"
+                             , "15"
+                             , "All" ]
+  rs <- getRecents
+  let initialState = State (L.list () options 1) Nothing rs gs
+  _ <- defaultMain app initialState
+  return ()
 
 getRecents :: IO (Stack FilePath)
 getRecents = do
@@ -251,6 +264,9 @@ refreshRecents s = do
       options       = Vec.fromList (prettyRecents ++ ["Select file from system"])
   return $ s & recents .~ rs
              & list    .~ L.list () options 1
+
+amountSelector :: State -> IO State
+amountSelector = undefined
 
 runFileBrowser :: State -> IO State
 runFileBrowser s = do
