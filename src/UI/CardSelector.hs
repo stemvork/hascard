@@ -57,13 +57,19 @@ drawUI s =
   [ drawMenu s <=> drawException s ]
 
 title :: Widget Name
-title = withAttr titleAttr $ str "Select a deck of flashcards "
+title = withAttr titleAttr $ str "Select a deck of flashcards"
 
 shuffledWidget :: State -> Widget Name
 shuffledWidget s = withAttr exceptionAttr $ str $ 
     case s^.gs.doShuffle of
-      True -> "(Shuffled)"
+      True -> " (Shuffled)"
       False -> ""
+
+subsetWidget :: State -> Widget Name
+subsetWidget s = withAttr exceptionAttr $ str $ 
+    case s^.gs.subset of
+      Just a -> " (Subset " ++ show a ++ ")"
+      Nothing -> ""
 
 drawMenu :: State -> Widget Name
 drawMenu s = 
@@ -72,7 +78,7 @@ drawMenu s =
   withBorderStyle unicodeRounded $
   border $
   hLimitPercent 60 $
-  hCenter (title <+> shuffledWidget s) <=>
+  hCenter (title <+> subsetWidget s <+> shuffledWidget s) <=>
   hBorder <=>
   hCenter (drawList s)
 
